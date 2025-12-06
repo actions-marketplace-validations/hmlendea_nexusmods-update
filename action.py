@@ -4,9 +4,11 @@ import time
 
 import undetected_chromedriver as uc
 from selenium import webdriver
+#from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+#from webdriver_manager.chrome import ChromeDriverManager
 
 class Action:
     account_email_address: str
@@ -52,17 +54,19 @@ class Action:
 
         driver.find_element(By.ID, "login").click()
 
-        try:
-            print("Attempting to verify captcha...")
-            captcha_box = driver.find_element(By.XPATH, '//*[@id="turnstile-wrapper"]/div')
-            time.sleep(5)
-            actions = ActionChains(driver)
-            actions.move_by_offset(captcha_box.location['x'] + 24, captcha_box.location['y'] + 24).click().perform()
-        except:
-            print("Captcha verification not required...")
-
         driver.find_element(By.ID, "user_login").send_keys(self.account_email_address)
         driver.find_element(By.ID, "password").send_keys(self.account_password)
+
+        captcha_is_required=False
+        try:
+            captcha_box = driver.find_element(By.ID, 'turnstile-wrapper')
+            captcha_is_required=True
+        except Exception as ex:
+            captcha_is_required=False
+
+        if captcha_is_required:
+            raise Exception("Captcha is required")
+
         driver.find_element(By.NAME, "commit").click()
 
         try:
@@ -90,7 +94,12 @@ class Action:
 
         driver.find_element(By.ID, "remove-old-version").click()
         driver.find_element(By.ID, "file-description").send_keys(self.file_description)
-        driver.find_element(By.ID, "option-requirements").click()
+
+        try:
+            driver.find_element(By.ID, "option-requirements").click()
+        except:
+            pass
+
         driver.find_element(By.ID, "add_file_browse").find_elements(By.XPATH, ".//*")[0].send_keys(os.path.abspath(self.file_path))
 
         WebDriverWait(driver, 1500).until(lambda x: x.find_element(By.ID, "upload_success").is_displayed())
@@ -103,15 +112,23 @@ if __name__ == "__main__":
     print("Validating the input parameters...")
     action = Action()
 
+    user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+
     print("Configuring the WebDriver...")
     options = webdriver.chrome.options.Options()
 
     options.add_argument('--headless')
+    options.add_argument("--use_subprocess")
     options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_argument(f"user-agent={user_agent}")
 
     print("Starting the WebDriver...")
-    driver = uc.Chrome(version_main=113, options=options)
-    #driver = webdriver.Chrome() # For debugging locally
+    driver = uc.Chrome(version_main=119, options=options)
+
+    # For debugging locally
+    #driver = webdriver.Chrome()
+    #driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
     driver.implicitly_wait(30)
 
     print("Logging into Nexus...")
