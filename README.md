@@ -1,5 +1,12 @@
 [![Donate](https://img.shields.io/badge/-%E2%99%A5%20Donate-%23ff69b4)](https://hmlendea.go.ro/fund.html) [![Latest GitHub release](https://img.shields.io/github/v/release/hmlendea/nexusmods-update)](https://github.com/hmlendea/nexusmods-update/releases/latest)
 
+# DISCONTINUED
+This has been broken for a while now because of Captcha.
+
+Furthermore, an official action is now avilable at [Nexus-Mods/upload-action](https://github.com/Nexus-Mods/upload-action), which should be used instead of this one.
+
+-----
+
 # About
 
 Updates a mod on Nexus Mods.
